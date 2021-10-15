@@ -67,6 +67,20 @@ extern uint8_t fondo[];
 
 uint8_t contador = 0;
 
+uint8_t state_pacman = 0x00;
+uint8_t flag_pacman = 0x00; // arriba 1, abajo 2, derecha 4, izquierda 3
+
+uint8_t state_ghost = 0x00;
+uint8_t flag_ghost= 0x00;
+
+//mapeo de coordenadas
+uint16_t pacmanx = 12;
+uint8_t pacmany = 107;
+uint16_t ghostx= 282;
+uint8_t ghosty= 122;
+
+uint8_t index1;
+
 volatile byte state = LOW;
 File myFile;
 
@@ -117,8 +131,8 @@ void setup() {
   //dibujar laberinto
   Rect(40,40,10, 160, 0x09b9b9b);//de izquierda a derecha
   
-  Rect(80,40,10, 60,  0x09b9b9b);
-  Rect(80,130,10, 70, 0x09b9b9b);//vertical
+  Rect(80,40,10, 70,  0x09b9b9b);
+  Rect(80,140,10, 60, 0x09b9b9b);//vertical
   Rect(90,40,90, 10,  0x09b9b9b);
   Rect(90,190,190, 10, 0x09b9b9b); //horizontal
 
@@ -133,7 +147,7 @@ void setup() {
   Rect(220,150,60, 10, 0x09b9b9b);
 
   Rect(250,40,20, 80, 0x09b9b9b); //bloque grande final
-  
+
   
   //FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c)
  // FillRect(80, 60, 160, 120, 0x0400);
@@ -141,50 +155,753 @@ void setup() {
   //LCD_Print(String text, int x, int y, int fontSize, int color, int background)
  // String text1 = "LAB 08";
   //LCD_Print(text1, 110, 110, 2, 0xffff, 0x0000);
-  
+  initialState();
  }
- 
+
+
 
 //***************************************************************************************************************************************
 // Loop
 //***************************************************************************************************************************************
 void loop() {
+  delay(11);
+  //Movimiento para pacman
+  if ( state_pacman == 0 && flag_pacman == 1){ //posibilidad pacman hacia arriba
+
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany + 26, 26, 0x00);
+
+    if(pacmany == 12){
+      state_pacman = 1;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 0  && flag_pacman == 2){//posibilidad pacman hacia abajo
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany - 1, 26, 0x00);
+    
+    if(pacmany == 202){
+      state_pacman = 2;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+  if ( state_pacman == 1 && flag_pacman == 4){ // codigo estado 1 (arriba)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 52){
+      state_pacman = 3;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 1  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany - 1, 26, 0x00);
+    
+    if(pacmany == 202){
+      state_pacman = 2;
+      flag_pacman = 0;
+    }
+    
+  }
+  
+
+  if ( state_pacman == 2 && flag_pacman == 4){ // codigo estado 2 (abajo)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 52){
+      state_pacman = 4;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 2  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 1;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+  if ( state_pacman == 3 && flag_pacman == 4){ // codigo estado 3 (arriba->derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 182){
+      state_pacman = 5;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 3  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 6;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 3  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    V_line( pacmanx + 26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 12){
+      state_pacman = 1;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+  if ( state_pacman == 4 && flag_pacman == 4){ // codigo estado 4 (abajo->derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 282){
+      state_pacman = 7;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 4  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 6;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 4  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    V_line( pacmanx + 26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 12){
+      state_pacman = 2;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+                                                //estado 5 está despues
+  if ( state_pacman == 6 && flag_pacman == 4){ // codigo estado 6 (centro izquierda)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 92){
+      state_pacman = 8;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 6  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 3;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 6  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 202){
+      state_pacman = 4;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+                                                  //estado 7 está despues
+  if ( state_pacman == 8 && flag_pacman == 4){ // codigo estado 8 (centro)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 182){
+      state_pacman = 9;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 52){
+      state_pacman = 10;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 162){
+      state_pacman = 11;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 52){
+      state_pacman = 6;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  if( state_pacman == 9  && flag_pacman == 1){// codigo estado 9 (centro)
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 5;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 9  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 162){
+      state_pacman = 12;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 9  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 92){
+      state_pacman = 8;
+      flag_pacman = 0;
+    }
+    
+  }
+  
+
+
+
+ if ( state_pacman == 10 && flag_pacman == 4){ // codigo estado 10 (centro)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 182){
+      state_pacman = 13;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 10 && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 8;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+  if ( state_pacman == 11 && flag_pacman == 4){ // codigo estado 11 (centro)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 182){
+      state_pacman = 12;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 11 && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 8;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  if ( state_pacman == 5 && flag_pacman == 4){ // codigo estado 5 (centro->derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 222){
+      state_pacman = 14;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 5  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 42){
+      state_pacman = 13;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 5  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 52){
+      state_pacman = 3;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  if( state_pacman == 13  && flag_pacman == 1){// codigo estado 13 (centro->derecha)
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 5;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 13  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 9;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 13  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 92){
+      state_pacman = 10;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  if ( state_pacman == 12 && flag_pacman == 4){ // codigo estado 12 (centro->derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 282){
+      state_pacman = 18;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 12  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 112){
+      state_pacman = 9;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 12  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 92){
+      state_pacman = 11;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  if( state_pacman == 7  && flag_pacman == 1){// codigo estado 7 (centro->derecha)
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 162){
+      state_pacman = 18;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 7  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 52){
+      state_pacman = 4;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+
+  if ( state_pacman == 14 && flag_pacman == 4){ // codigo estado 14 (derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 282){
+      state_pacman = 15;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 14  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 122){
+      state_pacman = 16;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 14  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 182){
+      state_pacman = 5;
+      flag_pacman = 0;
+    }
+   
+  }
+
+
+
+
+  if( state_pacman == 8  && flag_pacman == 2){// codigo estado 15 (derecha)
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 122){
+      state_pacman = 17;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 222){
+      state_pacman = 14;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+  if ( state_pacman == 8 && flag_pacman == 4){ // codigo estado 16 (derecha)
+
+    index1 = (pacmanx/11)%3;
+    pacmanx ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+    V_line( pacmanx-1, pacmany, 26, 0x00);
+
+    if(pacmanx == 282){
+      state_pacman = 17;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 1){
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 14;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+  
+  
+  if( state_pacman == 8  && flag_pacman == 1){// codigo estado 17 (derecha)
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 12){
+      state_pacman = 15;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 162){
+      state_pacman = 18;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 222){
+      state_pacman = 16;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+ if( state_pacman == 8  && flag_pacman == 1){// codigo estado 18 (centro)
+    index1 = (pacmany/11)%3;
+    pacmany --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_toup,3,index1,0,0);
+    H_line( pacmanx, pacmany +26, 26, 0x00);
+    
+    if(pacmany == 122){
+      state_pacman = 17;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 2){
+    index1 = (pacmany/11)%3;
+    pacmany ++;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman_todown,3,index1,0,0);
+    H_line( pacmanx, pacmany -1, 26, 0x00);
+    
+    if(pacmany == 202){
+      state_pacman = 7;
+      flag_pacman = 0;
+    }
+    
+  }else if( state_pacman == 8  && flag_pacman == 3){
+    index1 = (pacmanx/11)%3;
+    pacmanx --;
+    LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,1,0);
+    H_line( pacmanx +26, pacmany, 26, 0x00);
+    
+    if(pacmanx == 182){
+      state_pacman = 12;
+      flag_pacman = 0;
+    }
+    
+  }
+
+
+
+
+  
+
+  //Movimiento para ghost
+  if (state_ghost == 0 && flag_ghost == 1){
+
+    index1 = (ghosty/11)%4;
+    ghosty --;
+    LCD_Sprite(ghostx,ghosty,26,26,sprite_ghost,4,index1,0,0);
+    H_line( ghostx, ghosty + 26, 26, 0x00);
+    
+    if(ghosty == 12){
+      state_ghost = 1;
+    }
+  }else if( state_ghost == 0 && flag_ghost == 2){
+    index1 = (ghosty/11)%4;
+    ghosty++;
+    LCD_Sprite(ghostx,ghosty,26,26,sprite_ghost,4,index1,0,0);
+    H_line( ghostx, ghosty - 1, 26, 0x00);
+    
+    if(ghosty == 202){
+      state_ghost = 2;
+    }
+       
+  }else if( state_ghost == 0 && flag_ghost == 3){
+    index1 = (ghostx/11)%4;
+    ghostx--;
+    LCD_Sprite(ghostx,ghosty,26,26,sprite_ghost,4,index1,0,0);
+    V_line( ghostx+26, ghosty, 26, 0x00);
+    
+    if(ghostx == 222){
+      state_ghost = 3;
+    }
+  }
+
+
+  delay(11);
  
-  for(int x = 12; x <320-38; x++){
-    delay(10);
-    
-    int pacman_index = (x/11)%3;
-   
-    //LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-    LCD_Sprite(x, 12, 26, 26, sprite_pacman, 3, pacman_index, 0,0 );
-    
-    V_line( x -1, 12, 26, 0x00);
-    
-  }
-
-  FillRect(281, 12, 26, 26, 0x00);
-  
-  for(int x = 12; x <240-36; x++){
-    delay(20);
-    
-    int ghost_index = (x/11)%4;
-   
-    //LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-    LCD_Sprite(12, x, 26, 26, sprite_ghost, 4, ghost_index, 0,0 );
-    
-    H_line( 12, x -1, 26, 0x00);
-    
-  }
-
-  FillRect(12, 203, 26, 26, 0x00);
-  
 }
 
 
 
+//--------------------------------------------Funciones--------------------------------------------------------
+
+
+void initialState(){
+
+      index1 = 1%3;
+     
+      //LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
+      LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
+      LCD_Sprite(ghostx,ghosty,26,26,sprite_ghost,4,index1,0,0);
+
+      //flag_ghost = 3;
+      //flag_pacman = 4;
+
+      //state_pacman = 1;
+      //state_pacman == 1 && flag_pacman == 3
+
+     pinMode(PA5, INPUT_PULLUP);
+     pinMode(PA6, INPUT_PULLUP);
+     pinMode(PA7, INPUT_PULLUP);
+     pinMode(PF1, INPUT_PULLUP);
+  
+     attachInterrupt(digitalPinToInterrupt(PA5), toUp, RISING);
+     attachInterrupt(digitalPinToInterrupt(PA6), toDown, RISING);
+     attachInterrupt(digitalPinToInterrupt(PA7), toRight, RISING);
+     attachInterrupt(digitalPinToInterrupt(PF1), toLeft, RISING);
+     
+  }
+
+
+  void toUp(){
+      flag_pacman = 1;
+    }
+
+  void toDown(){
+      flag_pacman = 2;
+    }
+    
+  void toRight(){
+      flag_pacman =4;
+    }
+
+  void toLeft(){
+      flag_pacman =3;
+    }
 
 //para abrir la ruta y el archivo de la imagen para ponerla en la lcd
-void cargarFondoSD(unsigned int x, unsigned int y, unsigned int width, unsigned int height, char * archivo){
+void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsigned int height, char * archivo){
 
   myFile = SD.open(archivo);
   uint16_t n = 0;
