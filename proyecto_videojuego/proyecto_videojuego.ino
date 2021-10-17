@@ -24,7 +24,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 
-#include "bitmaps.h"
+//#include "bitmaps.h"
 #include "font.h"
 #include "lcd_registers.h"
 
@@ -62,8 +62,13 @@ void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
 
 
-extern uint8_t fondo[];
+//extern uint8_t fondo[];
 //extern uint8_t uvg[];
+extern uint8_t  sprite_pacman[];
+extern uint8_t  sprite_pacman_toup[];
+extern uint8_t  sprite_pacman_todown[];
+extern uint8_t  sprite_ghost[];
+
 
 uint8_t contador = 0;
 
@@ -113,8 +118,9 @@ void setup() {
   LCD_Clear(0x00);
   
   //LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
-  LCD_Bitmap(0, 0, 320, 240, fondo);
   
+  //LCD_Bitmap(0, 0, 320, 240, fondo);
+  uploadBackgroundSD(0, 0, 320, 240,"prueba.txt");
   delay(3000);// push
   
   LCD_Clear(0x00);
@@ -1437,7 +1443,7 @@ void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsi
   myFile = SD.open(archivo);
   uint16_t n = 0;
   uint16_t dimension = width*height*2;
-  unsigned char fondo2[dimension] = {};//se le da el dimensionamiento al array según el archivo
+  unsigned char fondo2[640] = {};//se le da el dimensionamiento al array según el archivo
   unsigned char caracter;
   unsigned char digito;
   
@@ -1445,25 +1451,32 @@ void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsi
     // read from the file until there's nothing else in it:
     
     while(myFile.available()) {
-      
-      unsigned char value = 0;
-      caracter = myFile.read(); 
-      
-      
-      if (caracter == 120){ //se lee y verifica el valor de inicio x
-          for(uint8_t i = 0; i < 2; i++){
-            caracter = myFile.read();
-            digito = Char_to_hex(caracter);
-            if (i == 0){ // se convierte a su valor decimal
-              value = digito*16;
+    //Serial.print("aqui toy");
+      while(n<640){
+        unsigned char value = 0;
+        caracter = myFile.read();       
+        if (caracter == 120){ //se lee y verifica el valor de inicio x
+            for(uint8_t i = 0; i < 2; i++){
+              caracter = myFile.read();
+              digito = Char_to_hex(caracter);
+              if (i == 0){ // se convierte a su valor decimal
+                value = digito*16;
+              }
+              else if (i == 1){
+                value = value + digito;
+              }
             }
-            else if (i == 1){
-              value = value + digito;
-            }
-          }
-          fondo2[n] = value; //se le da el valor en su respectiva posición del arreglo 
-          n ++;
-      }     
+            fondo2[n] = value; //se le da el valor en su respectiva posición del arreglo 
+            n ++;
+        }else if(!myFile.available()){
+           break;
+          }    
+      }
+
+      n=0;
+      y++;
+      LCD_Bitmap(x,y,width,1,fondo2); // se dibuja la imagen en la lcd
+      
     }
     // close the file:
     myFile.close();
@@ -1472,8 +1485,7 @@ void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsi
     Serial.println("error opening ");
   }
 
-   LCD_Bitmap(x,y,width,height,fondo2); // se dibuja la imagen en la lcd
-
+  
 }
 
 
