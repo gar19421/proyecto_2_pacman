@@ -10,6 +10,97 @@
 //--------------Videojuego - PACMAN--------------//
 
 
+#define NOTE_B0  31
+#define NOTE_C1  33
+#define NOTE_CS1 35
+#define NOTE_D1  37
+#define NOTE_DS1 39
+#define NOTE_E1  41
+#define NOTE_F1  44
+#define NOTE_FS1 46
+#define NOTE_G1  49
+#define NOTE_GS1 52
+#define NOTE_A1  55
+#define NOTE_AS1 58
+#define NOTE_B1  62
+#define NOTE_C2  65
+#define NOTE_CS2 69
+#define NOTE_D2  73
+#define NOTE_DS2 78
+#define NOTE_E2  82
+#define NOTE_F2  87
+#define NOTE_FS2 93
+#define NOTE_G2  98
+#define NOTE_GS2 104
+#define NOTE_A2  110
+#define NOTE_AS2 117
+#define NOTE_B2  123
+#define NOTE_C3  131
+#define NOTE_CS3 139
+#define NOTE_D3  147
+#define NOTE_DS3 156
+#define NOTE_E3  165
+#define NOTE_F3  175
+#define NOTE_FS3 185
+#define NOTE_G3  196
+#define NOTE_GS3 208
+#define NOTE_A3  220
+#define NOTE_AS3 233
+#define NOTE_B3  247
+#define NOTE_C4  262
+#define NOTE_CS4 277
+#define NOTE_D4  294
+#define NOTE_DS4 311
+#define NOTE_E4  330
+#define NOTE_F4  349
+#define NOTE_FS4 370
+#define NOTE_G4  392
+#define NOTE_GS4 415
+#define NOTE_A4  440
+#define NOTE_AS4 466
+#define NOTE_B4  494
+#define NOTE_C5  523
+#define NOTE_CS5 554
+#define NOTE_D5  587
+#define NOTE_DS5 622
+#define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_FS5 740
+#define NOTE_G5  784
+#define NOTE_GS5 831
+#define NOTE_A5  880
+#define NOTE_AS5 932
+#define NOTE_B5  988
+#define NOTE_C6  1047
+#define NOTE_CS6 1109
+#define NOTE_D6  1175
+#define NOTE_DS6 1245
+#define NOTE_E6  1319
+#define NOTE_F6  1397
+#define NOTE_FS6 1480
+#define NOTE_G6  1568
+#define NOTE_GS6 1661
+#define NOTE_A6  1760
+#define NOTE_AS6 1865
+#define NOTE_B6  1976
+#define NOTE_C7  2093
+#define NOTE_CS7 2217
+#define NOTE_D7  2349
+#define NOTE_DS7 2489
+#define NOTE_E7  2637
+#define NOTE_F7  2794
+#define NOTE_FS7 2960
+#define NOTE_G7  3136
+#define NOTE_GS7 3322
+#define NOTE_A7  3520
+#define NOTE_AS7 3729
+#define NOTE_B7  3951
+#define NOTE_C8  4186
+#define NOTE_CS8 4435
+#define NOTE_D8  4699
+#define NOTE_DS8 4978
+#define REST      0
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <TM4C123GH6PM.h>
@@ -40,6 +131,19 @@
 int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};  
 
 
+int melody[] = {
+NOTE_B4, NOTE_B5, NOTE_FS5, NOTE_DS5, //1
+  NOTE_B5, NOTE_FS5, NOTE_DS5, NOTE_C5,
+  NOTE_C6, NOTE_G6, NOTE_E6, NOTE_C6, NOTE_G6, NOTE_E6,
+
+  NOTE_B4, NOTE_B5,  NOTE_FS5,  NOTE_DS5,  NOTE_B5, //2
+  NOTE_FS5, NOTE_DS5,  NOTE_DS5, NOTE_E5,  NOTE_F5, 
+  NOTE_F5, NOTE_FS5, NOTE_G5, NOTE_G5, NOTE_GS5, NOTE_A5, NOTE_B5};
+
+// note durations: 4 = quarter note, 8 = eighth note, etc.:
+int noteDurations[] = {
+  4,4,4,4,8,6,2,4,4,4,4,8,6,2,4,4,4,4,8,6,2,8,4,4,8,4,4,8,4,2,2};
+
 //#define SW1 PF_4
 //#define SW2 PF_0
 
@@ -60,7 +164,7 @@ void LCD_Print(String text, int x, int y, int fontSize, int color, int backgroun
 
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-
+void Start_game(void);
 
 //extern uint8_t fondo[];
 //extern uint8_t uvg[];
@@ -68,9 +172,9 @@ extern uint8_t  sprite_pacman[];
 extern uint8_t  sprite_pacman_toup[];
 extern uint8_t  sprite_pacman_todown[];
 extern uint8_t  sprite_ghost[];
+extern uint8_t  sprite_pacman_win[];
+extern uint8_t  sprite_ghost_win[];
 
-
-uint8_t contador = 0;
 
 uint8_t state_pacman = 0x00;
 uint8_t flag_pacman = 0x00; // arriba 1, abajo 2, derecha 4, izquierda 3
@@ -85,7 +189,19 @@ uint16_t ghostx= 282;
 uint8_t ghosty= 122;
 
 uint8_t index1;
+uint8_t init_game = 0;
 
+
+// Variables will change:
+int counter = 0;             // ledState used to set the LED
+long previousMillis = 0;        // will store last time LED was updated
+
+// the follow variables is a long because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long interval = 1000;           // interval at which to blink (milliseconds)
+
+bool collision = false; // detección de colisión
+bool collision2 = false;
 volatile byte state = LOW;
 File myFile;
 
@@ -93,8 +209,7 @@ File myFile;
 // Initialization
 //***************************************************************************************************************************************
 void setup() {
-
-
+  
   // se inicializa la comunicación con la sd
   Serial.begin(9600);  //iniciamos comunicacion serial
   SPI.setModule(0);  //iniciamos comunicacion SPI en el modulo 0
@@ -122,6 +237,15 @@ void setup() {
   //LCD_Bitmap(0, 0, 320, 240, fondo);
   uploadBackgroundSD(0, 0, 320, 240,"prueba.txt");
   delay(3000);// push
+
+   pinMode(PF_4, INPUT_PULLUP);
+   pinMode(PF_0, INPUT_PULLUP);
+   attachInterrupt(digitalPinToInterrupt(PF_4), Start_game, RISING);
+   attachInterrupt(digitalPinToInterrupt(PF_0), Start_game, RISING);
+  
+  while(init_game == 0){
+    initmusic();
+  }
   
   LCD_Clear(0x00);
 
@@ -146,9 +270,7 @@ void setup() {
   Rect(120,140,60, 20, 0x09b9b9b);
   //Rect(130,90,50, 10, 0x09b9b9b); //bloques centrales internos
   //Rect(130,150,40, 10, 0x09b9b9b);
-  String text1 = "Pts: 1"; //texto interno
-  LCD_Print(text1, 130,90, 1, 0xffff, 0x00);
-
+  
   Rect(210,40,10, 120, 0x09b9b9b);//Gusanito / vertical
   Rect(220,150,60, 10, 0x09b9b9b);
 
@@ -171,6 +293,33 @@ void setup() {
 //***************************************************************************************************************************************
 void loop() {
   delay(11);
+  unsigned long currentMillis = millis();
+ 
+  if(currentMillis - previousMillis > interval) {
+    // save the last time you blinked the LED 
+    previousMillis = currentMillis;   
+    counter++;
+    if(counter < 91 && collision == false){
+      String text1 = " T:"+(String)counter;
+      LCD_Print(text1, 130,90, 1, 0xffff, 0x00);
+      Serial.print(counter);
+    }
+    if(counter == 90){
+      for (int hz = 500; hz < 1500 ;hz+= 25) {
+        tone(PF_2, hz,50);
+        delay(5);
+      }
+      for (int hz = 1500; hz > 500 ;hz-= 25) {
+        tone(PF_2, hz,50);
+        delay(5);
+      }
+      uploadBackgroundSD(0, 0, 320, 240,"gameover.txt");
+      state_ghost = 19;
+      state_pacman = 19;
+      initmusic();
+    }
+  }
+  
   //Movimiento para pacman
   if ( state_pacman == 0 && flag_pacman == 1){ //posibilidad pacman hacia arriba
 
@@ -816,6 +965,16 @@ void loop() {
     
   }
 
+  if ( state_pacman == 19){ //posibilidad pacman hacia arriba
+
+    for(int i = 0; i<60; i++){
+      index1 = (i/15)%3;
+      LCD_Sprite(147,175,26,26,sprite_pacman,3,index1,0,0); 
+      index1 = (i/15)%2;
+      LCD_Sprite(50,40,220,100,sprite_pacman_win,2,index1,0,0); 
+    }
+  }
+
    //Movimiento para ghost
   //STATE_GHOST 0
   if (state_ghost == 0 && flag_ghost == 1){
@@ -1359,6 +1518,36 @@ void loop() {
       flag_ghost = 0;
     }
   }
+
+ if ( state_ghost == 18){ //posibilidad pacman hacia arriba
+    for(int i = 0; i<60; i++){
+      index1 = (i/15)%3;
+      LCD_Sprite(147,175,26,26,sprite_ghost,4,index1,0,0); 
+      index1 = (i/15)%2;
+      LCD_Sprite(50,40,220,100,sprite_ghost_win,2,index1,0,0); 
+    }
+  }
+  
+  if(collision2 == false){
+     collision = Collision(ghostx, ghosty, 26, 26, pacmanx, pacmany, 26, 26);
+  }
+  if(collision){
+      collision =false;
+      collision2=true;
+      counter = 93;
+      for (int hz = 500; hz < 1500 ;hz+= 25) {
+      tone(PF_2, hz,50);
+      delay(5);
+      }
+     for (int hz = 1500; hz > 500 ;hz-= 25) {
+      tone(PF_2, hz,50);
+      delay(5);
+     }
+    uploadBackgroundSD(0, 0, 320, 240,"gameover.txt");
+    state_ghost = 18;
+    state_pacman = 20;
+    initmusic();
+  }
   delay(11);
  
 }
@@ -1367,6 +1556,27 @@ void loop() {
 
 //--------------------------------------------Funciones--------------------------------------------------------
 
+void Start_game(){
+  init_game = 1;  
+}
+
+void initmusic(){
+  for (int thisNote = 0; thisNote < 32; thisNote++) {
+
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 600/noteDurations[thisNote];
+    tone(PF_2, melody[thisNote],noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(PF_2);
+  }
+}
 
 void initialState(){
 
@@ -1381,61 +1591,71 @@ void initialState(){
 
       //state_pacman = 1;
       //state_pacman == 1 && flag_pacman == 3
-
       pinMode(PC_6, INPUT_PULLUP);
       pinMode(PC_7, INPUT_PULLUP);
       pinMode(PD_6, INPUT_PULLUP);
       pinMode(PD_7, INPUT_PULLUP);
-  
-     attachInterrupt(digitalPinToInterrupt(PC_6), toUp, RISING);
-     attachInterrupt(digitalPinToInterrupt(PC_7), toDown, RISING);
-     attachInterrupt(digitalPinToInterrupt(PD_6), toRight, RISING);
-     attachInterrupt(digitalPinToInterrupt(PD_7), toLeft, RISING);
-
-      pinMode(PF_0, INPUT_PULLUP);
-      pinMode(PC_4, INPUT_PULLUP);
-      pinMode(PF_3, INPUT_PULLUP);
-      pinMode(PE_0, INPUT_PULLUP);
-  
-     attachInterrupt(digitalPinToInterrupt(PF_0), toUp2, RISING);
-     attachInterrupt(digitalPinToInterrupt(PC_4), toDown2, RISING);
-     attachInterrupt(digitalPinToInterrupt(PF_3), toRight2, RISING);
-     attachInterrupt(digitalPinToInterrupt(PE_0), toLeft2, RISING);
-     
+    
+      attachInterrupt(digitalPinToInterrupt(PC_6), toUp, RISING);
+      attachInterrupt(digitalPinToInterrupt(PC_7), toDown, RISING);
+      attachInterrupt(digitalPinToInterrupt(PD_6), toRight, RISING);
+      attachInterrupt(digitalPinToInterrupt(PD_7), toLeft, RISING);
+    
+      pinMode(PE_2, INPUT_PULLUP);
+      pinMode(PA_7, INPUT_PULLUP);
+      pinMode(PA_6, INPUT_PULLUP);
+      pinMode(PE_3, INPUT_PULLUP);
+    
+      attachInterrupt(digitalPinToInterrupt(PE_2), toUp2, RISING);
+      attachInterrupt(digitalPinToInterrupt(PA_7), toDown2, RISING);
+      attachInterrupt(digitalPinToInterrupt(PA_6), toRight2, RISING);
+      attachInterrupt(digitalPinToInterrupt(PE_3), toLeft2, RISING);
   }
 
 
   void toUp(){
       flag_pacman = 1;
+      tone(PF_2, NOTE_F4,50);
     }
 
   void toDown(){
       flag_pacman = 2;
+      tone(PF_2, NOTE_F4,50);
     }
     
   void toRight(){
       flag_pacman =4;
+      tone(PF_2, NOTE_F4,50);
     }
 
   void toLeft(){
       flag_pacman =3;
+      tone(PF_2, NOTE_F4,50);
     }
 
   void toUp2(){
       flag_ghost = 1;
+      tone(PF_2, NOTE_F4,50);
     }
 
   void toDown2(){
       flag_ghost = 2;
+      tone(PF_2, NOTE_F4,50);
     }
     
   void toRight2(){
       flag_ghost =4;
+      tone(PF_2, NOTE_F4,50);
     }
 
   void toLeft2(){
       flag_ghost =3;
+      tone(PF_2, NOTE_F4,50);
     }
+
+bool Collision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2){
+  return (x1 < x2 + w2) && (x1+ w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2); 
+}
 
 //para abrir la ruta y el archivo de la imagen para ponerla en la lcd
 void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsigned int height, char * archivo){
