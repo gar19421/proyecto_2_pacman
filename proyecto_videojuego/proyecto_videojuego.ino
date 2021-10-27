@@ -2,14 +2,14 @@
 // Author: Brandon Garrido y Margareth Vela
 // Carnet: 19421 / 19458
 // Fecha de creación: 12/10/2021
-// Ultima modificación: .../10/2021
+// Ultima modificación: 24/10/2021
 //**************************************************************************
 
 
 //-------Proyecto 2 Electrónica Digital 2---------//
 //--------------Videojuego - PACMAN--------------//
 
-
+//Declaración de las frecuencias usadas en la melodía
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -101,6 +101,7 @@
 #define NOTE_DS8 4978
 #define REST      0
 
+//Importación de librerías
 #include <stdint.h>
 #include <stdbool.h>
 #include <TM4C123GH6PM.h>
@@ -123,6 +124,7 @@
 #include <SPI.h>
 #include <SD.h>
 
+//Declaración de los pines usados en LCD
 #define LCD_RST PD_0
 #define LCD_CS PD_1
 #define LCD_RS PD_2
@@ -130,7 +132,7 @@
 #define LCD_RD PE_1
 int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};  
 
-
+//Composición de la melodía utilizada
 int melody[] = {
 NOTE_B4, NOTE_B5, NOTE_FS5, NOTE_DS5, //1
   NOTE_B5, NOTE_FS5, NOTE_DS5, NOTE_C5,
@@ -140,12 +142,9 @@ NOTE_B4, NOTE_B5, NOTE_FS5, NOTE_DS5, //1
   NOTE_FS5, NOTE_DS5,  NOTE_DS5, NOTE_E5,  NOTE_F5, 
   NOTE_F5, NOTE_FS5, NOTE_G5, NOTE_G5, NOTE_GS5, NOTE_A5, NOTE_B5};
 
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
+// Duración de la nota musical
 int noteDurations[] = {
   4,4,4,4,8,6,2,4,4,4,4,8,6,2,4,4,4,4,8,6,2,8,4,4,8,4,4,8,4,2,2};
-
-//#define SW1 PF_4
-//#define SW2 PF_0
 
 
 //***************************************************************************************************************************************
@@ -166,8 +165,7 @@ void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
 void Start_game(void);
 
-//extern uint8_t fondo[];
-//extern uint8_t uvg[];
+//Declaración de los sprites guardados en la memoria flash
 extern uint8_t  sprite_pacman[];
 extern uint8_t  sprite_pacman_toup[];
 extern uint8_t  sprite_pacman_todown[];
@@ -176,34 +174,32 @@ extern uint8_t  sprite_pacman_win[];
 extern uint8_t  sprite_ghost_win[];
 
 
-uint8_t state_pacman = 0x00;
+uint8_t state_pacman = 0x00; //Estados de posición para pacman
 uint8_t flag_pacman = 0x00; // arriba 1, abajo 2, derecha 4, izquierda 3
 
-uint8_t state_ghost = 0x00;
-uint8_t flag_ghost= 0x00;
+uint8_t state_ghost = 0x00; //Estados de posición para ghost
+uint8_t flag_ghost= 0x00; // arriba 1, abajo 2, derecha 4, izquierda 3
 
-//mapeo de coordenadas
+//Mapeo de coordenadas
 uint16_t pacmanx = 12;
 uint8_t pacmany = 107;
 uint16_t ghostx= 282;
 uint8_t ghosty= 122;
 
-uint8_t index1;
-uint8_t init_game = 0;
+uint8_t index1; //Renderizado de los sprites
+uint8_t init_game = 0; //Bandera para finalizar melodía y comenzar el juego
 
 
 // Variables will change:
-int counter = 0;             // ledState used to set the LED
-long previousMillis = 0;        // will store last time LED was updated
+int counter = 0;             //Variable para Temporizador
+long previousMillis = 0;        //Variable que guarda el tiempo transcurrido
 
-// the follow variables is a long because the time, measured in miliseconds,
-// will quickly become a bigger number than can be stored in an int.
-long interval = 1000;           // interval at which to blink (milliseconds)
+long interval = 1000;           // Intervalo en milisegundos)
 
 bool collision = false; // detección de colisión
 bool collision2 = false;
 volatile byte state = LOW;
-File myFile;
+File myFile; //Variable para archivo SD
 
 //***************************************************************************************************************************************
 // Initialization
@@ -231,20 +227,18 @@ void setup() {
   Serial.println("Start");
   LCD_Init();
   LCD_Clear(0x00);
-  
-  //LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
-  
-  //LCD_Bitmap(0, 0, 320, 240, fondo);
-  uploadBackgroundSD(0, 0, 320, 240,"prueba.txt");
+    
+  //Renderizado de la pantalla de inicio
+  uploadBackgroundSD(0, 0, 320, 240,"prueba.txt"); 
   delay(3000);// push
-
-   pinMode(PF_4, INPUT_PULLUP);
+  
+   pinMode(PF_4, INPUT_PULLUP); //Pines para inicio de juego
    pinMode(PF_0, INPUT_PULLUP);
    attachInterrupt(digitalPinToInterrupt(PF_4), Start_game, RISING);
    attachInterrupt(digitalPinToInterrupt(PF_0), Start_game, RISING);
   
-  while(init_game == 0){
-    initmusic();
+  while(init_game == 0){ 
+    initmusic(); //Reproducir melodía
   }
   
   LCD_Clear(0x00);
@@ -268,22 +262,13 @@ void setup() {
 
   Rect(120,80,60, 30, 0x09b9b9b); //bloques centrales externos
   Rect(120,140,60, 20, 0x09b9b9b);
-  //Rect(130,90,50, 10, 0x09b9b9b); //bloques centrales internos
-  //Rect(130,150,40, 10, 0x09b9b9b);
   
-  Rect(210,40,10, 120, 0x09b9b9b);//Gusanito / vertical
+  Rect(210,40,10, 120, 0x09b9b9b);//Forma L en laberinto
   Rect(220,150,60, 10, 0x09b9b9b);
 
   Rect(250,40,20, 80, 0x09b9b9b); //bloque grande final
 
-  
-  //FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c)
- // FillRect(80, 60, 160, 120, 0x0400);
-
-  //LCD_Print(String text, int x, int y, int fontSize, int color, int background)
- // String text1 = "LAB 08";
-  //LCD_Print(text1, 110, 110, 2, 0xffff, 0x0000);
-  initialState();
+  initialState(); //Estados iniciales del juego
  }
 
 
@@ -293,18 +278,21 @@ void setup() {
 //***************************************************************************************************************************************
 void loop() {
   delay(11);
-  unsigned long currentMillis = millis();
+  //***************************************************************************************************************************************
+  // Rutina para Temporizador
+  //***************************************************************************************************************************************
+  unsigned long currentMillis = millis(); 
  
-  if(currentMillis - previousMillis > interval) {
+  if(currentMillis - previousMillis > interval) { 
     // save the last time you blinked the LED 
     previousMillis = currentMillis;   
     counter++;
-    if(counter < 91 && collision == false){
+    if(counter < 91 && collision == false){ //LCD muestra tiempo transcurrido
       String text1 = " T:"+(String)counter;
       LCD_Print(text1, 130,90, 1, 0xffff, 0x00);
       Serial.print(counter);
     }
-    if(counter == 90){
+    if(counter == 90){ //Melodía Fin del juego
       for (int hz = 500; hz < 1500 ;hz+= 25) {
         tone(PF_2, hz,50);
         delay(5);
@@ -320,7 +308,9 @@ void loop() {
     }
   }
   
-  //Movimiento para pacman
+  //***************************************************************************************************************************************
+  // Posibles estados para movimiento de Pacman
+  //***************************************************************************************************************************************
   if ( state_pacman == 0 && flag_pacman == 1){ //posibilidad pacman hacia arriba
 
     index1 = (pacmany/11)%3;
@@ -597,9 +587,6 @@ void loop() {
     
   }
   
-
-
-
  if ( state_pacman == 10 && flag_pacman == 4){ // codigo estado 10 (centro)
 
     index1 = (pacmanx/11)%3;
@@ -625,8 +612,6 @@ void loop() {
     
   }
 
-
-
   if ( state_pacman == 11 && flag_pacman == 4){ // codigo estado 11 (centro)
 
     index1 = (pacmanx/11)%3;
@@ -651,9 +636,6 @@ void loop() {
     }
     
   }
-
-
-
 
   if ( state_pacman == 5 && flag_pacman == 4){ // codigo estado 5 (centro->derecha)
 
@@ -692,8 +674,6 @@ void loop() {
   }
 
 
-
-
   if( state_pacman == 13  && flag_pacman == 1){// codigo estado 13 (centro->derecha)
     index1 = (pacmany/11)%3;
     pacmany --;
@@ -728,8 +708,6 @@ void loop() {
     }
     
   }
-
-
 
 
   if ( state_pacman == 12 && flag_pacman == 4){ // codigo estado 12 (centro->derecha)
@@ -767,9 +745,7 @@ void loop() {
     }
     
   }
-
-
-
+  
 
   if( state_pacman == 7  && flag_pacman == 1){// codigo estado 7 (centro->derecha)
     index1 = (pacmany/11)%3;
@@ -794,8 +770,6 @@ void loop() {
     }
     
   }
-
-
 
 
 
@@ -965,7 +939,7 @@ void loop() {
     
   }
 
-  if ( state_pacman == 19){ //posibilidad pacman hacia arriba
+  if ( state_pacman == 19){ //Estado Pacman Win
 
     for(int i = 0; i<60; i++){
       index1 = (i/15)%3;
@@ -975,8 +949,10 @@ void loop() {
     }
   }
 
-   //Movimiento para ghost
-  //STATE_GHOST 0
+  //***************************************************************************************************************************************
+  // Posibles estados para movimiento de Ghost
+  //***************************************************************************************************************************************
+  //STATE_GHOST 0 (derecha)
   if (state_ghost == 0 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1010,7 +986,7 @@ void loop() {
       flag_ghost = 0;
     }
   }
-  //STATE_GHOST 1
+  //STATE_GHOST 1 (derecha)
   if (state_ghost == 1 && flag_ghost == 3){
 
     index1 = (ghostx/11)%4;
@@ -1033,7 +1009,7 @@ void loop() {
       flag_ghost = 0;
       }
     }
-  //STATE_GHOST 2
+  //STATE_GHOST 2 (derecha)
   if (state_ghost == 2 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1066,7 +1042,7 @@ void loop() {
       flag_ghost = 0;
     }
   }
-  //STATE_GHOST 3
+  //STATE_GHOST 3 (derecha)
   if (state_ghost == 3 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1089,7 +1065,7 @@ void loop() {
       flag_ghost = 0;
     }
   }
-  //STATE_GHOST 4
+  //STATE_GHOST 4 (centro derecha)
   if (state_ghost == 4 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1112,7 +1088,7 @@ void loop() {
       flag_ghost = 0;
     }
   }
-  //STATE_GHOST 5
+  //STATE_GHOST 5 (arriba)
   if( state_ghost == 5 && flag_ghost == 2){
     index1 = (ghosty/11)%4;
     ghosty++;
@@ -1145,7 +1121,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 6
+  //STATE_GHOST 6 (centro abajo)
   if (state_ghost == 6 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1179,7 +1155,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 7
+  //STATE_GHOST 7 (abajo)
     if (state_ghost == 7 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1213,7 +1189,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 8
+  //STATE_GHOST 8 (arriba)
     if( state_ghost == 8 && flag_ghost == 2){
     index1 = (ghosty/11)%4;
     ghosty++;
@@ -1246,7 +1222,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 9
+  //STATE_GHOST 9 (centro)
   if (state_ghost == 9 && flag_ghost == 1){
     index1 = (ghosty/11)%4;
     ghosty --;
@@ -1269,7 +1245,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 10
+  //STATE_GHOST 10 (centro)
   if (state_ghost == 10 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1304,7 +1280,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 11
+  //STATE_GHOST 11 (izquierda)
   if (state_ghost == 11 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1327,7 +1303,7 @@ void loop() {
       flag_ghost = 0;
     }
   }
-  //STATE_GHOST 12
+  //STATE_GHOST 12 (centro)
   if (state_ghost == 12 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1361,7 +1337,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 13
+  //STATE_GHOST 13 (centro arriba)
   if (state_ghost == 13 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1396,7 +1372,7 @@ void loop() {
     }
   }
   
-  //STATE_GHOST 14
+  //STATE_GHOST 14 (arriba izquierda)
   if( state_ghost == 14 && flag_ghost == 2){
     index1 = (ghosty/11)%4;
     ghosty++;
@@ -1429,7 +1405,7 @@ void loop() {
     }
   }
 
-  //STATE_GHOST 15
+  //STATE_GHOST 15 (centro)
   if (state_ghost == 15 && flag_ghost == 1){
 
     index1 = (ghosty/11)%4;
@@ -1473,7 +1449,7 @@ void loop() {
     }
   }
 
-  //STAGE_GHOST 16
+  //STAGE_GHOST 16 (izquierda arriba)
   if( state_ghost == 16 && flag_ghost == 2){
     index1 = (ghosty/11)%4;
     ghosty++;
@@ -1496,7 +1472,7 @@ void loop() {
     }
   }
 
-  //STAGE_GHOST 17
+  //STAGE_GHOST 17 (centro)
   if( state_ghost == 17 && flag_ghost == 2){
     index1 = (ghosty/11)%4;
     ghosty++;
@@ -1519,7 +1495,7 @@ void loop() {
     }
   }
 
- if ( state_ghost == 18){ //posibilidad pacman hacia arriba
+ if ( state_ghost == 18){ //Estado Ghost Win
     for(int i = 0; i<60; i++){
       index1 = (i/15)%3;
       LCD_Sprite(147,175,26,26,sprite_ghost,4,index1,0,0); 
@@ -1528,13 +1504,13 @@ void loop() {
     }
   }
   
-  if(collision2 == false){
+  if(collision2 == false){ //Antirebote de colisión
      collision = Collision(ghostx, ghosty, 26, 26, pacmanx, pacmany, 26, 26);
   }
-  if(collision){
+  if(collision){ //Verifica si hay colisión
       collision =false;
       collision2=true;
-      counter = 93;
+      counter = 93; //Melodía Fin del Juego
       for (int hz = 500; hz < 1500 ;hz+= 25) {
       tone(PF_2, hz,50);
       delay(5);
@@ -1543,7 +1519,7 @@ void loop() {
       tone(PF_2, hz,50);
       delay(5);
      }
-    uploadBackgroundSD(0, 0, 320, 240,"gameover.txt");
+    uploadBackgroundSD(0, 0, 320, 240,"gameover.txt"); 
     state_ghost = 18;
     state_pacman = 20;
     initmusic();
@@ -1552,15 +1528,14 @@ void loop() {
  
 }
 
-
-
-//--------------------------------------------Funciones--------------------------------------------------------
-
+//***************************************************************************************************************************************
+// Subrutinas
+//***************************************************************************************************************************************
 void Start_game(){
-  init_game = 1;  
+  init_game = 1;   //Inicio de juego
 }
 
-void initmusic(){
+void initmusic(){ //Reproducir música
   for (int thisNote = 0; thisNote < 32; thisNote++) {
 
     // to calculate the note duration, take one second 
@@ -1578,20 +1553,16 @@ void initmusic(){
   }
 }
 
-void initialState(){
+void initialState(){ //Estados Iniciales 
 
       index1 = 1%3;
-     
-      //LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
+
+      //Sprite inicial de Pacman y Ghost
       LCD_Sprite(pacmanx,pacmany,26,26,sprite_pacman,3,index1,0,0);
       LCD_Sprite(ghostx,ghosty,26,26,sprite_ghost,4,index1,0,0);
 
-      //flag_ghost = 3;
-      //flag_pacman = 4;
-
-      //state_pacman = 1;
-      //state_pacman == 1 && flag_pacman == 3
-      pinMode(PC_6, INPUT_PULLUP);
+      //Pines para controlar a Pacman
+      pinMode(PC_6, INPUT_PULLUP); 
       pinMode(PC_7, INPUT_PULLUP);
       pinMode(PD_6, INPUT_PULLUP);
       pinMode(PD_7, INPUT_PULLUP);
@@ -1600,7 +1571,8 @@ void initialState(){
       attachInterrupt(digitalPinToInterrupt(PC_7), toDown, RISING);
       attachInterrupt(digitalPinToInterrupt(PD_6), toRight, RISING);
       attachInterrupt(digitalPinToInterrupt(PD_7), toLeft, RISING);
-    
+
+      //Pines para controlar a Ghost
       pinMode(PE_2, INPUT_PULLUP);
       pinMode(PA_7, INPUT_PULLUP);
       pinMode(PA_6, INPUT_PULLUP);
@@ -1613,46 +1585,47 @@ void initialState(){
   }
 
 
-  void toUp(){
+  void toUp(){ // Push ↑ up PACMAN
       flag_pacman = 1;
       tone(PF_2, NOTE_F4,50);
     }
 
-  void toDown(){
+  void toDown(){ // Push ↓ down PACMAN
       flag_pacman = 2;
       tone(PF_2, NOTE_F4,50);
     }
     
-  void toRight(){
+  void toRight(){ // Push  → right PACMAN
       flag_pacman =4;
       tone(PF_2, NOTE_F4,50);
     }
 
-  void toLeft(){
+  void toLeft(){ // Push  ← left PACMAN
       flag_pacman =3;
       tone(PF_2, NOTE_F4,50);
     }
 
-  void toUp2(){
+  void toUp2(){ // Push ↑ up GHOST
       flag_ghost = 1;
       tone(PF_2, NOTE_F4,50);
     }
 
-  void toDown2(){
+  void toDown2(){  // Push ↓ down GHOST
       flag_ghost = 2;
       tone(PF_2, NOTE_F4,50);
     }
     
-  void toRight2(){
+  void toRight2(){ // Push  → right GHOST
       flag_ghost =4;
       tone(PF_2, NOTE_F4,50);
     }
 
-  void toLeft2(){
+  void toLeft2(){ // Push  ← left GHOST
       flag_ghost =3;
       tone(PF_2, NOTE_F4,50);
     }
 
+//Rutina para verificar colisión
 bool Collision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2){
   return (x1 < x2 + w2) && (x1+ w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2); 
 }
@@ -1669,9 +1642,8 @@ void uploadBackgroundSD(unsigned int x, unsigned int y, unsigned int width, unsi
   
   if (myFile) {
     // read from the file until there's nothing else in it:
-    
+    //Renderizado línea por línea de la  imagen de fondo 320x240 extraída de la SD
     while(myFile.available()) {
-    //Serial.print("aqui toy");
       while(n<640){
         unsigned char value = 0;
         caracter = myFile.read();       
@@ -1722,7 +1694,7 @@ unsigned char Char_to_hex(char value){
 }
 
 
-//hasta aquí codigo escrito 
+//hasta aquí código escrito 
 
 //***************************************************************************************************************************************
 // Función para inicializar LCD

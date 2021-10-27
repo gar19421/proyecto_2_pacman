@@ -1,0 +1,126 @@
+[p GLOBOPT AUTOSTATIC IEEE_DBL IEEE_FLT PIC14 PICREGULAR PICMID ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 16F887 ]
+[d frameptr 0 ]
+"10 C:\Program Files\Microchip\xc8\v2.31\pic\sources\c90\common\sprcadd.c
+[v ___fladd __fladd `(d  1 e 4 0 ]
+"4 C:\Program Files\Microchip\xc8\v2.31\pic\sources\c90\common\Umul8_16.c
+[v __Umul8_16 _Umul8_16 `(ui  1 e 2 0 ]
+"6 C:\Program Files\Microchip\xc8\v2.31\pic\sources\c90\pic\__eeprom.c
+[v ___eecpymem __eecpymem `(v  1 e 1 0 ]
+"39
+[v ___memcpyee __memcpyee `(v  1 e 1 0 ]
+"77 C:\Users\brand\Downloads\UVG\SEXTO SEMESTRE\DIGITAL 2\PROYECTO 2 - PACMAN\Controls.X\main_controls.c
+[v _main main `(v  1 e 1 0 ]
+"94
+[v _isr isr `II(v  1 e 1 0 ]
+"103
+[v _IOCB_interrupt IOCB_interrupt `(v  1 e 1 0 ]
+"130
+[v _setup setup `(v  1 e 1 0 ]
+"228 C:/Program Files/Microchip/MPLABX/v5.45/packs/Microchip/PIC16Fxxx_DFP/1.2.33/xc8\pic\include\proc\pic16f887.h
+[v _PORTB PORTB `VEuc  1 e 1 @6 ]
+[s S62 . 1 `uc 1 RB0 1 0 :1:0 
+`uc 1 RB1 1 0 :1:1 
+`uc 1 RB2 1 0 :1:2 
+`uc 1 RB3 1 0 :1:3 
+`uc 1 RB4 1 0 :1:4 
+`uc 1 RB5 1 0 :1:5 
+`uc 1 RB6 1 0 :1:6 
+`uc 1 RB7 1 0 :1:7 
+]
+"245
+[u S71 . 1 `S62 1 . 1 0 ]
+[v _PORTBbits PORTBbits `VES71  1 e 1 @6 ]
+"352
+[v _PORTD PORTD `VEuc  1 e 1 @8 ]
+[s S83 . 1 `uc 1 RD0 1 0 :1:0 
+`uc 1 RD1 1 0 :1:1 
+`uc 1 RD2 1 0 :1:2 
+`uc 1 RD3 1 0 :1:3 
+`uc 1 RD4 1 0 :1:4 
+`uc 1 RD5 1 0 :1:5 
+`uc 1 RD6 1 0 :1:6 
+`uc 1 RD7 1 0 :1:7 
+]
+"369
+[u S92 . 1 `S83 1 . 1 0 ]
+[v _PORTDbits PORTDbits `VES92  1 e 1 @8 ]
+[s S26 . 1 `uc 1 RBIF 1 0 :1:0 
+`uc 1 INTF 1 0 :1:1 
+`uc 1 T0IF 1 0 :1:2 
+`uc 1 RBIE 1 0 :1:3 
+`uc 1 INTE 1 0 :1:4 
+`uc 1 T0IE 1 0 :1:5 
+`uc 1 PEIE 1 0 :1:6 
+`uc 1 GIE 1 0 :1:7 
+]
+"482
+[s S35 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 TMR0IF 1 0 :1:2 
+`uc 1 . 1 0 :2:3 
+`uc 1 TMR0IE 1 0 :1:5 
+]
+[u S40 . 1 `S26 1 . 1 0 `S35 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES40  1 e 1 @11 ]
+[s S140 . 1 `uc 1 PS 1 0 :3:0 
+`uc 1 PSA 1 0 :1:3 
+`uc 1 T0SE 1 0 :1:4 
+`uc 1 T0CS 1 0 :1:5 
+`uc 1 INTEDG 1 0 :1:6 
+`uc 1 nRBPU 1 0 :1:7 
+]
+"1366
+[s S147 . 1 `uc 1 PS0 1 0 :1:0 
+`uc 1 PS1 1 0 :1:1 
+`uc 1 PS2 1 0 :1:2 
+]
+[u S151 . 1 `S140 1 . 1 0 `S147 1 . 1 0 ]
+[v _OPTION_REGbits OPTION_REGbits `VES151  1 e 1 @129 ]
+"1478
+[v _TRISB TRISB `VEuc  1 e 1 @134 ]
+"1602
+[v _TRISD TRISD `VEuc  1 e 1 @136 ]
+[s S110 . 1 `uc 1 SCS 1 0 :1:0 
+`uc 1 LTS 1 0 :1:1 
+`uc 1 HTS 1 0 :1:2 
+`uc 1 OSTS 1 0 :1:3 
+`uc 1 IRCF 1 0 :3:4 
+]
+"1882
+[s S116 . 1 `uc 1 . 1 0 :4:0 
+`uc 1 IRCF0 1 0 :1:4 
+`uc 1 IRCF1 1 0 :1:5 
+`uc 1 IRCF2 1 0 :1:6 
+]
+[u S121 . 1 `S110 1 . 1 0 `S116 1 . 1 0 ]
+[v _OSCCONbits OSCCONbits `VES121  1 e 1 @143 ]
+"2346
+[v _WPUB WPUB `VEuc  1 e 1 @149 ]
+"2416
+[v _IOCB IOCB `VEuc  1 e 1 @150 ]
+"3387
+[v _ANSEL ANSEL `VEuc  1 e 1 @392 ]
+"3449
+[v _ANSELH ANSELH `VEuc  1 e 1 @393 ]
+"77 C:\Users\brand\Downloads\UVG\SEXTO SEMESTRE\DIGITAL 2\PROYECTO 2 - PACMAN\Controls.X\main_controls.c
+[v _main main `(v  1 e 1 0 ]
+{
+"89
+} 0
+"130
+[v _setup setup `(v  1 e 1 0 ]
+{
+"167
+} 0
+"94
+[v _isr isr `II(v  1 e 1 0 ]
+{
+"101
+} 0
+"103
+[v _IOCB_interrupt IOCB_interrupt `(v  1 e 1 0 ]
+{
+"126
+} 0
